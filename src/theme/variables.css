@@ -1,2 +1,62 @@
 /* For information on how to create your own theme, please refer to:
 http://ionicframework.com/docs/theming/ */
+/* ==========================================================================
+   1. VARIABLES RESPONSIVE (De móvil a escritorio)
+   ========================================================================== */
+
+/* PANTALLAS PEQUEÑAS / MÓVILES (Por defecto) */
+:root {
+  /* Tipografía fluida */
+  --app-font-title: 1.8rem;
+  --app-font-body: 1rem;
+  
+  /* Espaciados adaptables */
+  --app-padding: 1rem;
+  --app-card-radius: 8px;
+
+  /* COLORES BASE - MODO CLARO */
+  --ion-color-primary: #3880ff;
+  --ion-color-primary-rgb: 56, 128, 255;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-shade: #3171e0;
+  --ion-color-primary-tint: #4c8dff;
+
+  --ion-background-color: #ffffff;
+  --ion-text-color: #121212;
+}
+
+/* TABLETS (Pantallas medianas: 768px o más) */
+@media screen and (min-width: 768px) {
+  :root {
+    --app-font-title: 2.2rem;
+    --app-font-body: 1.05rem;
+    
+    --app-padding: 1.5rem;
+    --app-card-radius: 12px;
+  }
+}
+
+/* ESCRITORIO / PANTALLAS GRANDES (1024px o más) */
+@media screen and (min-width: 1024px) {
+  :root {
+    --app-font-title: 2.6rem;
+    --app-font-body: 1.1rem;
+    
+    --app-padding: 2rem;
+    --app-card-radius: 16px;
+  }
+}
+
+/* ==========================================================================
+   2. RESPONSIVE POR PREFERENCIA DE USUARIO (Modo Oscuro)
+   ========================================================================== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ion-color-primary: #428cff;
+    --ion-color-primary-shade: #3a7be0;
+    --ion-color-primary-tint: #5598ff;
+
+    --ion-background-color: #121212;
+    --ion-text-color: #ffffff;
+  }
+}
