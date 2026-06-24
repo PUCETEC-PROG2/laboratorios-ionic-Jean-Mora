@@ -12,11 +12,10 @@ const githubClient = axios.create({
         Authorization: `Bearer ${GITHUB_API_TOKEN}` ,
         Accept: "application/vnd.github+json"
     }
-})
+});
 
 export const fetchRepositories = async (): Promise<Repository[]> => {
     try {
-
         const response = await githubClient.get("/user/repos", {
             params: {
                 per_page: 100,
@@ -26,33 +25,28 @@ export const fetchRepositories = async (): Promise<Repository[]> => {
             }
         });
         return response.data as Repository[];
-
     } catch (error) {
         console.error("Error al leer repositorios:", error);
-        throw new Error(`${(error as Error).message}`)
-        
+        throw new Error(`${(error as Error).message}`);
     }
 };
 
-export const createRepository = async (repository : RepositoryPayload) Promise <Repository> => {
+export const createRepository = async (repository: RepositoryPayload): Promise<Repository> => {
     try { 
-        const response = await githubClient.post("/user/repos");
-        retun response.data as Repository
-    }catch (error){
+        const response = await githubClient.post("/user/repos", repository);
+        return response.data as Repository; 
+    } catch (error) {
         console.error("Error al agregar repositorio", error);
-        throw new Error( '${(error as Error).message}' ) 
-    }}
+        throw new Error(`${(error as Error).message}`); 
+    }
+};
 
 export const fetchUserInfo = async (): Promise<GithubUser> => {
-    try{
-        const reponse = await githubClient.get("user");
-        return reponse.data as GithubUser
-
+    try {
+        const response = await githubClient.get("user"); 
+        return response.data as GithubUser;
     } catch (error) {
         console.error("Error al leer usuario", error);
-        throw new Error( '${(error as Error).message}' ) 
+        throw new Error(`${(error as Error).message}`); 
     }
-
-}
-
-
+};
