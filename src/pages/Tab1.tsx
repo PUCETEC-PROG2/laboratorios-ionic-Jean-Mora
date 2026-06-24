@@ -1,7 +1,7 @@
 import { IonContent, IonHeader, IonList, IonPage, IonText, IonTitle, IonToolbar, useIonViewWillEnter } from '@ionic/react';
 import RepoItem from '../components/RepoItem';
 import { Repository } from '../interfaces/Repository';
-import { fecthRepositories } from '../services/GithubService'; 
+import { fetchRepositories } from '../services/GithubService';
 import React from 'react';
 import './Tab1.css';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -9,17 +9,14 @@ import LoadingSpinner from '../components/LoadingSpinner';
 const Tab1: React.FC = () => {
   const [repositoryList, setRepositoryList] = React.useState<Repository[]>([]);
   const [loading, setLoading] = React.useState(false);
+  const [errorMsg, setErrorMsg] = React.useState("");
 
   const loadRepos = async () => {
     setLoading(true);
-    try {
-      const reposData = await fecthRepositories();
-      setRepositoryList(reposData);
-    } catch (error) {
-      console.error("Error al cargar repositorios:", error);
-    } finally {
-      setLoading(false);
-    }
+    fetchRepositories()
+      .then((reposData) => setRepositoryList(reposData)) 
+      .catch((error) => setErrorMsg("error al cargar repositorios." + error))
+      .finally(() => setLoading(false));
   };
 
   useIonViewWillEnter(() => {
@@ -33,7 +30,7 @@ const Tab1: React.FC = () => {
           <IonTitle>Repositorios</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent fullscreen>
+      <IonContent fullscreen className='ion-padding'>
         <IonHeader collapse="condense">
           <IonToolbar>
             <IonTitle size="large">Repositorios</IonTitle>
@@ -46,13 +43,14 @@ const Tab1: React.FC = () => {
           <>
             <IonList>
               {repositoryList.map((repo) => (
-                <RepoItem key={repo.id} repository={repo} />
+                <RepoItem key={repo.id} repository={repo} /> 
               ))}
             </IonList>
+            {loading && <LoadingSpinner />}
 
-            {repositoryList.length === 0 && (
-              <IonText color="danger" className="ion-padding text-center">
-                <p>No se pudieron cargar los repositorios o la lista está vacía.</p>
+            {errorMsg !== "" && (
+              <IonText color="danger">
+                <p>{errorMsg}</p>
               </IonText>
             )}
           </>
