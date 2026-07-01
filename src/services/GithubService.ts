@@ -21,7 +21,9 @@ export const fetchRepositories = async (): Promise<Repository[]> => {
                 per_page: 100,
                 sort: "created",
                 direction: "desc",
-                affiliation: "owner" 
+                affiliation: "owner",
+                // SOLUCIÓN: Esto rompe la caché de ionic serve inmediatamente sin recargar la página
+                _t: Date.now() 
             }
         });
         return response.data as Repository[];
@@ -48,5 +50,28 @@ export const fetchUserInfo = async (): Promise<GithubUser> => {
     } catch (error) {
         console.error("Error al leer usuario", error);
         throw new Error(`${(error as Error).message}`); 
+    }
+};
+
+
+
+// 1. MÉTODO DELETE - Eliminar un repositorio permanente
+export const deleteRepository = async (owner: string, repoName: string): Promise<void> => {
+    try {
+        await githubClient.delete(`/repos/${owner}/${repoName}`);
+    } catch (error) {
+        console.error("Error al eliminar repositorio", error);
+        throw new Error(`${(error as Error).message}`);
+    }
+};
+
+// 2. MÉTODO PATCH - Actualizar datos parciales del repositorio (nombre o descripción)
+export const updateRepository = async (owner: string, repoName: string, repository: RepositoryPayload): Promise<Repository> => {
+    try {
+        const response = await githubClient.patch(`/repos/${owner}/${repoName}`, repository);
+        return response.data as Repository;
+    } catch (error) {
+        console.error("Error al actualizar repositorio", error);
+        throw new Error(`${(error as Error).message}`);
     }
 };

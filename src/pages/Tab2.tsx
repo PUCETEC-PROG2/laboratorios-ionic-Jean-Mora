@@ -1,54 +1,109 @@
 import { IonButton, IonContent, IonHeader, IonInput, IonPage, IonText, IonTextarea, IonTitle, IonToolbar, useIonViewWillEnter } from '@ionic/react';
 import './Tab2.css';
-import { useHistory } from 'react-router';
+import { useHistory, useParams } from 'react-router';
 import { RepositoryPayload } from '../interfaces/RepositoryPayloads';
 import React from 'react';
-import { createRepository } from '../services/GithubService';
+import { createRepository, updateRepository, fetchRepositories } from '../services/GithubService'; 
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const Tab2: React.FC = () => {
   const history = useHistory();
-  const [repositoryData, setRepositoryData] = useSate <RepositoryPayload>({
+  const { repoName } = useParams<{ repoName?: string }>(); 
+  
+  const [repositoryData, setRepositoryData] = React.useState<RepositoryPayload>({
     name: "",
     description: ""
-  })
+  });
+  
   const [loading, setLoading] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState("");
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [ownerName, setOwnerName] = React.useState("");
 
-  const saveRepo = async() => {
-    if(repositoryData.name.trim() === ''){
-      setErrorMsg("el nobre del repositorio es obligatorio");
-      return;
-    }
-    setLoading(true);
-    createRepository(repositoryData)
-      .then(()=> history.push("/tab1"))
-      .catch((error) => setErrorMsg("error al crear repositorio." + error))
-      .finally(() => { 
+  const checkMode = async () => {
+    setErrorMsg("");
+    
+    if (repoName) {
+      setLoading(true);
+      setIsEditing(true);
+      try {
+        const currentRepos = await fetchRepositories();
+        const found = currentRepos.find(r => r.name === repoName);
+        if (found) {
+          setOwnerName(found.owner.login);
+          setRepositoryData({
+            name: found.name,
+            description: found.description || ""
+          });
+        } else {
+          // Si tenía parámetro pero ya no existe en GitHub, reseteamos a modo creación automáticamente sin dar error
+          setIsEditing(false);
+          setOwnerName("");
+          setRepositoryData({ name: "", description: "" });
+        }
+      } catch (error) {
+        setErrorMsg("Error al cargar datos del repositorio a editar");
+      } finally {
         setLoading(false);
-        setRepositoryData({
-          name: "",
-          descrription:""
-        });
-      });  
+      }
+    } else {
+      setIsEditing(false);
+      setOwnerName("");
+      setRepositoryData({ name: "", description: "" });
+    }
   };
 
-  useIonViewWillEnter(() =>{
-    setErrorMsg("");
-  })
+  useIonViewWillEnter(() => {
+    checkMode();
+  });
 
-  
+  const saveRepo = async () => {
+    if (repositoryData.name.trim() === '') {
+      setErrorMsg("El nombre del repositorio es obligatorio");
+      return;
+    }
+
+    setLoading(true);
+    setErrorMsg(""); 
+
+    if (isEditing && repoName) {
+      // CASO PATCH: Editar repositorio existente
+      updateRepository(ownerName || "owner", repoName, repositoryData)
+        .then(() => {
+          alert("¡Repositorio actualizado con éxito!"); 
+          setRepositoryData({ name: "", description: "" });
+          history.push("/tab1"); 
+        })
+        .catch((error) => {
+          setErrorMsg("Error al actualizar (PATCH): " + error.message);
+        })
+        .finally(() => setLoading(false));
+    } else {
+      // CASO POST: Crear repositorio nuevo
+      createRepository(repositoryData)
+        .then(() => {
+          alert("¡Repositorio creado con éxito!"); 
+          setRepositoryData({ name: "", description: "" });
+          history.push("/tab1"); 
+        })
+        .catch((error) => {
+          setErrorMsg("Error al crear (POST): " + error.message);
+        })
+        .finally(() => setLoading(false));
+    }
+  };
+
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Formulario de Repositorio</IonTitle>
+          <IonTitle>{isEditing ? "Editar Repositorio" : "Formulario de Repositorio"}</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
         <IonHeader collapse="condense">
           <IonToolbar>
-            <IonTitle size="large">Formulario de Repositorio</IonTitle>
+            <IonTitle size="large">{isEditing ? "Editar Repositorio" : "Formulario de Repositorio"}</IonTitle>
           </IonToolbar>
         </IonHeader>
 
@@ -58,42 +113,42 @@ const Tab2: React.FC = () => {
              label="Nombre del Repositorio"
              labelPlacement="floating"
              placeholder="Ingrese nombre del Repositorio"
-             value={repositoryData}
-             onIonChange={(e) => setRepositoryData({...repositoryData,description: e.detail.value!})}
+             value={repositoryData.name}
+             onIonChange={(e) => setRepositoryData({...repositoryData, name: e.detail.value!})}
+             disabled={isEditing} 
           />
+          
           <IonTextarea
              className="form-field"
-             label="Descripcion del Repositorio"
+             label="Descripción del Repositorio"
              labelPlacement="floating"
-             placeholder="Ingrese la descripcion del Repositorio"
-             onIonChange={(e) => setRepositoryData({...repositoryData,description: e.detail.value!})}
+             placeholder="Ingrese la descripción del Repositorio"
+             value={repositoryData.description}
+             onIonChange={(e) => setRepositoryData({...repositoryData, description: e.detail.value!})}
              rows={6}
           />
-          {errorMsg !== "" && <IonText color="danger">{errorMsg}</IonText>}
+          
+          {errorMsg !== "" && (
+            <IonText color="danger" className="ion-padding">
+              <p>{errorMsg}</p>
+            </IonText>
+          )}
+          
           <IonButton
              className="form-field"
              expand="block"
              shape="round"
-             color="primary"
+             color={isEditing ? "success" : "primary"}
              onClick={saveRepo}
           >
-             Guardar
-
+             {isEditing ? "Actualizar Cambios" : "Guardar"}
           </IonButton>
-          
         </div>
+        
         {loading && <LoadingSpinner />}
-
       </IonContent>
     </IonPage>
   );
 };
 
 export default Tab2;
-
-
-
-function useSate<T>(arg0: { name: string; description: string; }): [any, any] {
-  throw new Error('Function not implemented.');
-}
-
