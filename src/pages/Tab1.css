@@ -1,0 +1,53 @@
+/* Contenedor general con soporte para scroll suave */
+ion-content {
+  --background: var(--ion-background-color, #f4f5f8);
+}
+
+/* Lista adaptativa usando Grid/Flex en pantallas grandes */
+ion-list {
+  background: transparent !important;
+  padding: 12px 4px;
+  max-width: 800px;
+  margin: 0 auto; /* Centra la lista en pantallas de escritorio */
+}
+
+/* Tarjetas deslizables estilizadas con diseño de elevación premium */
+ion-item-sliding {
+  margin-bottom: 14px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--ion-item-background, #ffffff);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Efecto hover discreto solo en computadoras */
+@media (min-width: 768px) {
+  ion-item-sliding:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  }
+}
+
+/* Botones de acción al deslizar */
+ion-item-options {
+  border: none;
+}
+
+ion-item-option {
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  --padding-start: 24px;
+  --padding-end: 24px;
+}
+
+/* Mensajes informativos de pantalla vacía o carga */
+.text-center {
+  text-align: center;
+  margin-top: 40px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ion-color-medium);
+}
